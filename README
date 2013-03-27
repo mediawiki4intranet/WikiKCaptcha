@@ -1,0 +1,14 @@
+KCAPTCHA plug-in for MediaWiki ConfirmEdit extension
+
+LICENSE: GNU GPLv3
+
+USAGE:
+1) Download ConfirmEdit extension into extensions/ConfirmEdit
+2) Download this extension into extensions/WikiKCaptcha
+3) Put the following lines into your LocalSettings.php:
+
+   require_once "$IP/extensions/ConfirmEdit/ConfirmEdit.php";
+   require_once "$IP/extensions/ConfirmEdit/WikiKCaptcha.class.php";
+   $wgCaptchaClass = 'WikiKCaptcha';
+4) Optionally configure CAPTCHA triggers
+   See http://www.mediawiki.org/wiki/Extension:ConfirmEdit#Configuration

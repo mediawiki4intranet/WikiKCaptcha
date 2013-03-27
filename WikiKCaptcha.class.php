@@ -36,6 +36,15 @@
 
 $wgExtensionMessagesFiles['FancyCaptcha'] = dirname(__DIR__) . '/ConfirmEdit/FancyCaptcha.i18n.php';
 
+$wgExtensionCredits['other'][] = array(
+	'path' => __FILE__,
+	'name' => 'WikiKCaptcha',
+	'author' => array( 'Vitaliy Filippov', 'Sergei Kruglov' ),
+	'version' => '1.0',
+	'url' => 'http://wiki.4intra.net/WikiKCaptcha',
+	'description' => 'KCAPTCHA plug-in for MediaWiki ConfirmEdit extension',
+);
+
 class WikiKCaptcha extends SimpleCaptcha {
 	function keyMatch( $answer, $info ) {
 		return @$info['answer'] && $answer === @$info['answer'];
