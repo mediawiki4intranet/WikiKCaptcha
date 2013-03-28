@@ -95,14 +95,16 @@ class WikiKCaptcha extends SimpleCaptcha {
 		global $wgOut;
 		$wgOut->disable();
 		$info = $this->retrieveCaptcha();
-		if ( $info ) {
+		if ( !$info ) {
+			wfHttpError( 500, 'Internal Error', 'Requested bogus captcha image' );
+		} elseif ( $info['viewed'] ) {
+			wfHttpError( 404, 'Not Found', 'Pecking same captcha is forbidden.' );
+		} else {
 			require __DIR__.'/util/kcaptcha.php';
 			$c = new KCAPTCHA;
 			$info['viewed'] = wfTimestampNow();
 			$info['answer'] = $c->getKeyString();
 			$this->storeCaptcha( $info );
-		} else {
-			wfHttpError( 500, 'Internal Error', 'Requested bogus captcha image' );
 		}
 		return false;
 	}
