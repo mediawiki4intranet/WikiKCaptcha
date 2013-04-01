@@ -92,13 +92,18 @@ class WikiKCaptcha extends SimpleCaptcha {
 	}
 
 	function showImage() {
-		global $wgOut;
+		global $wgOut, $IP;
 		$wgOut->disable();
 		$info = $this->retrieveCaptcha();
 		if ( !$info ) {
 			wfHttpError( 500, 'Internal Error', 'Requested bogus captcha image' );
 		} elseif ( $info['viewed'] ) {
-			wfHttpError( 404, 'Not Found', 'Pecking same captcha is forbidden.' );
+			// Bots like to peck same captcha ID many times
+			// We deny it by clearing the answer so the check will fail after two requests
+			$info['answer'] = false;
+			$this->storeCaptcha( $info );
+			require_once( "$IP/includes/StreamFile.php" );
+			wfStreamFile( __DIR__.'/pecking.png' );
 		} else {
 			require __DIR__.'/util/kcaptcha.php';
 			$c = new KCAPTCHA;
