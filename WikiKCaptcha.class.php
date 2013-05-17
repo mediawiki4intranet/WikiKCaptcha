@@ -31,10 +31,16 @@ class WikiKCaptcha extends SimpleCaptcha {
 		global $wgKCaptchaLogFile;
 		if ( $wgKCaptchaLogFile ) {
 			global $wgTitle, $wgRequest, $wgUser;
+			$action = $wgRequest->getVal( 'action' );
+			if ( $action == 'submitlogin' ) {
+				$username = $wgRequest->getVal( 'wpName' );
+			} else {
+				$username = str_replace( ' ', '_', $wgUser->getName() );
+			}
 			$msg = date('[Y-m-d H:i:s] ').'IP: '.wfGetIP().
-				' User: '.str_replace( ' ', '_', $wgUser->getName() ).
+				' User: '.$username.
 				' Title: '.$wgTitle->getPrefixedDBKey().
-				' Action: '.$wgRequest->getVal( 'action' ).
+				' Action: '.$action.
 				' Keystring: '.$info['answer'].
 				' Posted: '.$answer;
 			file_put_contents( $wgKCaptchaLogFile, $msg."\n", FILE_APPEND );
