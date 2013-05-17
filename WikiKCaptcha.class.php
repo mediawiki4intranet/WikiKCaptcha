@@ -26,27 +26,19 @@
  *
  */
 
-/**
- * USAGE: Put the following lines into your LocalSettings.php:
- *
- * require_once "extensions/ConfirmEdit/ConfirmEdit.php";
- * require_once "extensions/ConfirmEdit/WikiKCaptcha.class.php";
- * $wgCaptchaClass = 'WikiKCaptcha';
- */
-
-$wgExtensionMessagesFiles['FancyCaptcha'] = dirname(__DIR__) . '/ConfirmEdit/FancyCaptcha.i18n.php';
-
-$wgExtensionCredits['other'][] = array(
-	'path' => __FILE__,
-	'name' => 'WikiKCaptcha',
-	'author' => array( 'Vitaliy Filippov', 'Sergei Kruglov' ),
-	'version' => '1.0',
-	'url' => 'http://wiki.4intra.net/WikiKCaptcha',
-	'description' => 'KCAPTCHA plug-in for MediaWiki ConfirmEdit extension',
-);
-
 class WikiKCaptcha extends SimpleCaptcha {
 	function keyMatch( $answer, $info ) {
+		global $wgKCaptchaLogFile;
+		if ( $wgKCaptchaLogFile ) {
+			global $wgTitle, $wgRequest, $wgUser;
+			$msg = date('[Y-m-d H:i:s] ').'IP: '.wfGetIP().
+				' User: '.str_replace( ' ', '_', $wgUser->getName() ).
+				' Title: '.$wgTitle->getPrefixedDBKey().
+				' Action: '.$wgRequest->getVal( 'action' ).
+				' Keystring: '.$info['answer'].
+				' Posted: '.$answer;
+			file_put_contents( $wgKCaptchaLogFile, $msg."\n", FILE_APPEND );
+		}
 		return @$info['answer'] && $answer === @$info['answer'];
 	}
 
