@@ -27,8 +27,10 @@
  */
 
 class WikiKCaptcha extends SimpleCaptcha {
+
 	function keyMatch( $answer, $info ) {
 		global $wgKCaptchaLogFile;
+		$real = @$info['answer'];
 		if ( $wgKCaptchaLogFile ) {
 			global $wgTitle, $wgRequest, $wgUser;
 			$action = $wgRequest->getVal( 'action' );
@@ -37,19 +39,27 @@ class WikiKCaptcha extends SimpleCaptcha {
 			} else {
 				$username = str_replace( ' ', '_', $wgUser->getName() );
 			}
-			$msg = date('[Y-m-d H:i:s] ').'IP: '.wfGetIP().
-				' User: '.$username.
-				' Title: '.$wgTitle->getPrefixedDBKey().
-				' Action: '.$action.
-				' Keystring: '.$info['answer'].
-				' Posted: '.$answer;
-			file_put_contents( $wgKCaptchaLogFile, $msg."\n", FILE_APPEND );
+			$msg = array(
+				date( 'Y-m-d H:i:s' ), wfGetIP(),
+				$username, $wgTitle->getPrefixedDBKey(),
+				$action, $real, $answer
+			);
+			foreach ( $msg as $m ) {
+				if ( strpos( $m, ',' ) !== false ) {
+					$m = '"' . str_replace( '"', '""', $m ) . '"';
+				}
+			}
+			$msg = implode( ',', $msg ) . "\n";
+			if ( !@filesize( $wgKCaptchaLogFile ) ) {
+				$msg = "Date,IP,User,Title,Action,Keystring,Answer\n$msg";
+			}
+			file_put_contents( $wgKCaptchaLogFile, $msg, FILE_APPEND );
 		}
-		return @$info['answer'] && $answer === @$info['answer'];
+		return $real && $answer === $real;
 	}
 
 	function addCaptchaAPI( &$resultArr ) {
-		$index = $this->storeCaptcha( array( 'viewed' => false ) );
+		$index = $this->storeCaptcha( array( 'viewed' => false, 'nohex' => true ) );
 		$title = SpecialPage::getTitleFor( 'Captcha', 'image' );
 		$resultArr['captcha']['type'] = 'image';
 		$resultArr['captcha']['mime'] = 'image/jpg';
@@ -61,6 +71,8 @@ class WikiKCaptcha extends SimpleCaptcha {
 	 * Insert the captcha prompt into the edit form.
 	 */
 	function getForm() {
+		global $wgKCaptchaHex;
+
 		// Generate a random key for use of this captcha image in this session.
 		// This is needed so multiple edits in separate tabs or windows can
 		// go through without extra pain.
@@ -68,7 +80,15 @@ class WikiKCaptcha extends SimpleCaptcha {
 
 		$title = SpecialPage::getTitleFor( 'Captcha', 'image' );
 
-		return '<table><tr><td>' .
+		$params = array(
+			'type' => 'text',
+			'autocorrect' => 'off',
+			'autocapitalize' => 'off',
+			'required' => 'required',
+			'tabindex' => 1,
+		);
+
+		$str = '<table><tr><td>' .
 			Html::element( 'img', array(
 				'src'    => $title->getLocalUrl( 'wpCaptchaId=' . urlencode( $index ) ),
 				'alt'    => 'Image' ) ) .
@@ -77,20 +97,25 @@ class WikiKCaptcha extends SimpleCaptcha {
 				'type'  => 'hidden',
 				'name'  => 'wpCaptchaId',
 				'id'    => 'wpCaptchaId',
-				'value' => $index ) ) .
-			Html::element( 'input', array(
-				'name' => 'wpCaptchaWord',
-				'id'   => 'wpCaptchaWord',
-				'type' => 'text',
-				'autocorrect' => 'off',
-				'autocapitalize' => 'off',
-				'required' => 'required',
-				'tabindex' => 1 ) ) . // tab in before the edit textarea
+				'value' => $index ) );
+		if ( !empty( $wgKCaptchaHex ) ) {
+			$str .= Html::element( 'input', array(
+				'type'  => 'hidden',
+				'name'  => 'wpCaptchaWord',
+				'id'    => 'wpCaptchaWord' ) );
+			$params['onkeyup'] = $params['onchange'] = 'var v = ""; for (var i = 0; i < this.value.length; i++) { '.
+				'var c = this.value.charCodeAt(i).toString(16); if (c.length == 1) { v += "0"; } v += c; '.
+				'} document.getElementById("wpCaptchaWord").value = v.toLowerCase();';
+		} else {
+			$params['name'] = $params['id'] = 'wpCaptchaWord';
+		}
+		$str .= Html::element( 'input', $params ) . // tab in before the edit textarea
 			'</td></tr></table>';
+		return $str;
 	}
 
 	function showImage() {
-		global $wgOut, $IP;
+		global $wgOut, $IP, $wgKCaptchaHex;
 		$wgOut->disable();
 		$info = $this->retrieveCaptcha();
 		if ( !$info ) {
@@ -106,7 +131,9 @@ class WikiKCaptcha extends SimpleCaptcha {
 			require __DIR__.'/util/kcaptcha.php';
 			$c = new KCAPTCHA;
 			$info['viewed'] = wfTimestampNow();
-			$info['answer'] = $c->getKeyString();
+			// Hex answers are suppressed in API as they can break it
+			$info['answer'] = !empty( $wgKCaptchaHex ) && empty( $info['nohex'] )
+				? strtolower( bin2hex( $c->getKeyString() ) ) : $c->getKeyString();
 			$this->storeCaptcha( $info );
 		}
 		return false;

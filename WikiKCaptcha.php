@@ -35,7 +35,11 @@
  */
 
 // You can specify a writable file here to log captcha passing attempts
+// Log will be in CSV format
 $wgKCaptchaLogFile = false;
+
+// If true, CAPTCHA answers will be hex-encoded before submitting using JS on HTML forms
+$wgKCaptchaHex = true;
 
 $wgExtensionMessagesFiles['FancyCaptcha'] = dirname(__DIR__) . '/ConfirmEdit/FancyCaptcha.i18n.php';
 $wgAutoloadClasses['WikiKCaptcha'] = __DIR__ . '/WikiKCaptcha.class.php';
