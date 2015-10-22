@@ -26,6 +26,9 @@
  *
  */
 
+// getForm() method is really getForm(OutputPage $out) in ConfirmEdit REL1_26 and later
+// but we want to support old versions!
+error_reporting( ( $oldER = error_reporting() ) & ~E_STRICT );
 class WikiKCaptcha extends SimpleCaptcha {
 
 	function keyMatch( $answer, $info ) {
@@ -145,3 +148,4 @@ class WikiKCaptcha extends SimpleCaptcha {
 		return wfMessage( $name, $text )->isDisabled() ? wfMessage( 'fancycaptcha-edit' )->text() : $text;
 	}
 }
+error_reporting( $oldER );

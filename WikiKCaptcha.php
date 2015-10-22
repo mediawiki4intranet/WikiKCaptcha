@@ -7,7 +7,7 @@
  * Uses KCAPTCHA by Kruglov Sergei, 2006 (www.captcha.ru, www.kruglov.ru)
  *
  * License: GNU GPLv3 or later
- * Copyright (c) Vitaliy Filippov, 2013
+ * Copyright (c) Vitaliy Filippov, 2013+
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,12 @@ $wgKCaptchaLogFile = false;
 // If true, CAPTCHA answers will be hex-encoded before submitting using JS on HTML forms
 $wgKCaptchaHex = true;
 
-$wgExtensionMessagesFiles['FancyCaptcha'] = dirname(__DIR__) . '/ConfirmEdit/FancyCaptcha.i18n.php';
+if (file_exists(dirname(__DIR__) . '/ConfirmEdit/FancyCaptcha.i18n.php')) // 1.19-1.22
+	$wgExtensionMessagesFiles['FancyCaptcha'] = dirname(__DIR__) . '/ConfirmEdit/FancyCaptcha.i18n.php';
+elseif (file_exists(dirname(__DIR__) . '/ConfirmEdit/i18n/fancy'))
+	$wgMessagesDirs['FancyCaptcha'] = dirname(__DIR__) . '/ConfirmEdit/i18n/fancy'; // 1.23-1.24
+else
+	$wgMessagesDirs['FancyCaptcha'] = dirname(__DIR__) . '/ConfirmEdit/FancyCaptcha/i18n'; // 1.25+
 $wgAutoloadClasses['WikiKCaptcha'] = __DIR__ . '/WikiKCaptcha.class.php';
 
 $wgExtensionCredits['other'][] = array(
