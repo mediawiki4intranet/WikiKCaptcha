@@ -213,6 +213,64 @@ class KCAPTCHA{
 			}
 		}
 
+		$img3=imagecreatetruecolor($width, $height);
+		imagefilledrectangle($img3, 0, 0, $width-1, $height-1, imagecolorallocate($img3, 0xff, 0xff, 0xff));
+		imageellipse($img3, $width/2*0.9, $height/2, $width*0.8, $height*0.80, $black = imagecolorallocate($img3, 0, 0, 0));
+		imageellipse($img3, $width/2*0.9, $height/2, $width*0.82, $height*0.82, $black);
+		imageellipse($img3, $width/2*0.9, $height/2, $width*0.84, $height*0.84, $black);
+		// periods
+		$rand1=mt_rand(750000,1200000)/10000000;
+		$rand2=mt_rand(750000,1200000)/10000000;
+		$rand3=mt_rand(750000,1200000)/10000000;
+		$rand4=mt_rand(750000,1200000)/10000000;
+		// phases
+		$rand5=mt_rand(0,31415926)/10000000;
+		$rand6=mt_rand(0,31415926)/10000000;
+		$rand7=mt_rand(0,31415926)/10000000;
+		$rand8=mt_rand(0,31415926)/10000000;
+		// amplitudes
+		$rand9=mt_rand(330,420)/110;
+		$rand10=mt_rand(330,450)/100;
+		//wave distortion
+		for($x=0;$x<$width;$x++){
+			for($y=0;$y<$height;$y++){
+				$sx=$x+(sin($x*$rand1+$rand5)+sin($y*$rand3+$rand6))*$rand9-$width/2+$center+1;
+				$sy=$y+(sin($x*$rand2+$rand7)+sin($y*$rand4+$rand8))*$rand10;
+				if($sx<0 || $sy<0 || $sx>=$width-1 || $sy>=$height-1){
+					continue;
+				}else{
+					$color=imagecolorat($img3, $sx, $sy) & 0xFF;
+					$color_x=imagecolorat($img3, $sx+1, $sy) & 0xFF;
+					$color_y=imagecolorat($img3, $sx, $sy+1) & 0xFF;
+					$color_xy=imagecolorat($img3, $sx+1, $sy+1) & 0xFF;
+				}
+				if($color==255 && $color_x==255 && $color_y==255 && $color_xy==255){
+					continue;
+				}else if($color==0 && $color_x==0 && $color_y==0 && $color_xy==0){
+					$newred=$foreground_color[0];
+					$newgreen=$foreground_color[1];
+					$newblue=$foreground_color[2];
+				}else{
+					$frsx=$sx-floor($sx);
+					$frsy=$sy-floor($sy);
+					$frsx1=1-$frsx;
+					$frsy1=1-$frsy;
+					$newcolor=(
+						$color*$frsx1*$frsy1+
+						$color_x*$frsx*$frsy1+
+						$color_y*$frsx1*$frsy+
+						$color_xy*$frsx*$frsy);
+					if($newcolor>255) $newcolor=255;
+					$newcolor=$newcolor/255;
+					$newcolor0=1-$newcolor;
+					$newred=$newcolor0*$foreground_color[0]+$newcolor*$background_color[0];
+					$newgreen=$newcolor0*$foreground_color[1]+$newcolor*$background_color[1];
+					$newblue=$newcolor0*$foreground_color[2]+$newcolor*$background_color[2];
+				}
+				imagesetpixel($img2, $x, $y, imagecolorallocate($img2, $newred, $newgreen, $newblue));
+			}
+		}
+
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 		header('Cache-Control: no-store, no-cache, must-revalidate');
 		header('Cache-Control: post-check=0, pre-check=0', FALSE);

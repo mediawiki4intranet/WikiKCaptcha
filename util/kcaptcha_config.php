@@ -24,10 +24,10 @@ $height = 80;
 $fluctuation_amplitude = 8;
 
 #noise
-//$white_noise_density=0; // no white noise
-$white_noise_density=1/6;
-//$black_noise_density=0; // no black noise
-$black_noise_density=1/30;
+$white_noise_density=0; // no white noise
+//$white_noise_density=1/6;
+$black_noise_density=0; // no black noise
+//$black_noise_density=1/30;
 
 # increase safety by prevention of spaces between symbols
 $no_spaces = true;
