@@ -26,9 +26,6 @@
  *
  */
 
-// getForm() method is really getForm(OutputPage $out) in ConfirmEdit REL1_26 and later
-// but we want to support old versions!
-error_reporting( ( $oldER = error_reporting() ) & ~E_STRICT );
 class WikiKCaptcha extends SimpleCaptcha {
 
 	function keyMatch( $answer, $info ) {
@@ -73,7 +70,7 @@ class WikiKCaptcha extends SimpleCaptcha {
 	/**
 	 * Insert the captcha prompt into the edit form.
 	 */
-	function getForm() {
+	function getForm( OutputPage $out = NULL ) {
 		global $wgKCaptchaHex;
 
 		// Generate a random key for use of this captcha image in this session.
@@ -148,4 +145,3 @@ class WikiKCaptcha extends SimpleCaptcha {
 		return wfMessage( $name, $text )->isDisabled() ? wfMessage( 'fancycaptcha-edit' )->text() : $text;
 	}
 }
-error_reporting( $oldER );
