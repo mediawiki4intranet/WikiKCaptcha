@@ -126,7 +126,7 @@ class WikiKCaptcha extends SimpleCaptcha {
 			$info['answer'] = false;
 			$this->storeCaptcha( $info );
 			require_once( "$IP/includes/StreamFile.php" );
-			wfStreamFile( __DIR__.'/pecking.png' );
+			StreamFile::stream( __DIR__.'/pecking.png' );
 		} else {
 			require __DIR__.'/util/kcaptcha.php';
 			$c = new KCAPTCHA;
@@ -135,6 +135,7 @@ class WikiKCaptcha extends SimpleCaptcha {
 			$info['answer'] = !empty( $wgKCaptchaHex ) && empty( $info['nohex'] )
 				? strtolower( bin2hex( $c->getKeyString() ) ) : $c->getKeyString();
 			$this->storeCaptcha( $info );
+			$c->send();
 		}
 		return false;
 	}

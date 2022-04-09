@@ -213,19 +213,24 @@ class KCAPTCHA{
 			}
 		}
 
+		$this->jpeg_quality = $jpeg_quality;
+		$this->img = $img2;
+	}
+
+	function send(){
 		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
 		header('Cache-Control: no-store, no-cache, must-revalidate');
 		header('Cache-Control: post-check=0, pre-check=0', FALSE);
 		header('Pragma: no-cache');
 		if(function_exists("imagejpeg")){
 			header("Content-Type: image/jpeg");
-			imagejpeg($img2, null, $jpeg_quality);
+			imagejpeg($this->img, null, $this->jpeg_quality);
 		}else if(function_exists("imagegif")){
 			header("Content-Type: image/gif");
-			imagegif($img2);
+			imagegif($this->img);
 		}else if(function_exists("imagepng")){
-			header("Content-Type: image/x-png");
-			imagepng($img2);
+			header("Content-Type: image/png");
+			imagepng($this->img);
 		}
 	}
 
